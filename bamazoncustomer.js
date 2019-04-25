@@ -18,10 +18,4 @@ connection.connect(function(err) {
     
     console.log("connected as id " + connection.threadId);
     console.log("Welcome to bAmazon! We have a large variety of items! Please feel free to browse around!")
-    console.log("Here is a list of currently trending items!")
-
-    connection.query("SELECT * FROM products", function (err, result) {
-        if (err) throw err;
-        console.log(result);
-    })
 });
