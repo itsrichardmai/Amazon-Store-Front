@@ -13,6 +13,7 @@ var connection = mysql.createConnection({
     database: "amazon_db"
 })
 
+var userAnswer = {};
 
 connection.connect(function(err) {
     if (err) throw err; 
@@ -26,7 +27,8 @@ connection.connect(function(err) {
         if (err) throw err;
         // result is an array
         console.log(result);
-        
+
+        // application that uses inquirer to ask the user for requested ID and requested quantity. will return a  
         startApplication();
   
     })
@@ -51,18 +53,20 @@ function startApplication() {
         message: "Are you sure?"
         }
     ]).then(function(inquirerResponse) {
-
-        if (inquirerResponse.confirm) {
-            var userAnswer = {
-                itemID: parseInt(inquirerResponse.itemID),
-                quantity: parseInt(inquirerResponse.quantity)
-            }
-            // console.log(typeof userAnswer.quantity)
-            return userAnswer;
-            
-            
-
+            userAnswer = {
+            itemID: parseInt(inquirerResponse.itemID),
+            quantity: parseInt(inquirerResponse.quantity)
         }
+        if (inquirerResponse.confirm && userAnswer.itemID >= 1 && userAnswer.quantity >= 1) {
+            // console.log(typeof userAnswer.quantity)
+            // return userAnswer;
+            compareValue(userAnswer);
+        }
+        
+        else 
+
+        console.log("Error! You did not enter a valid number!")
+        return;
         
         // if (inquirerResponse.confirm && inquirerResponse.quantity.parseInt() >= 0 && inquirerResponse.itemID.parseInt() >= 0) {
         
@@ -74,3 +78,47 @@ function startApplication() {
         // return;
     })
     }
+
+
+    function compareValue() {
+        
+            var query = "SELECT item_id, product_name, department_name, price, stock_quantity FROM products WHERE item_id=";
+            connection.query( "" + query + userAnswer.itemID, function (err, result,) {
+                if (err) throw err;
+                    // result is an array   
+                    console.log(result[0].item_id)
+                    // var response = {
+                    //     department_name: result.department_name,
+                    //     price: result.price,
+                    //     stock: result.stock_quantity,
+                    //     name: result.product_name
+                    // }
+                            console.log("Your item is: " + result[0].product_name)
+                            console.log("Your item is in the " + result[0].department_name + " category!")
+                            console.log("The price of this item is: " + result[0].price);
+                            console.log("There are " + result[0].stock_quantity + " of this item left in stock.")
+                            console.log("-------------------------------------------------------");
+                            console.log("You wanted to purchase " + userAnswer.quantity + " of this item");
+
+                if (userAnswer.quantity >= result[0].stock_quantity) {
+                    console.log("Sorry, we do not have enough of this item in stock to sell you! Please try again later!")
+                }
+
+                            
+                    
+                console.log("Excellent! We have the stock to meet your order's requirements!");
+                console.log("Your order total will be: $" + (result[0].price * userAnswer.quantity));
+
+                var remainingQuantity = result[0].stock_quantity;
+                remainingQuantity -= userAnswer.quantity;
+                // console.log(remainingQuantity);
+                query = "UPDATE products SET stock_quantity =" + remainingQuantity + "WHERE item_id=" + userAnswer.itemID;
+                connection.query("" + query, function(err, result){
+                    if (err) throw err;
+                    console.log("There are only " + result + "of this item left")
+                    connection.end();
+                });
+        
+    })
+}
+    
