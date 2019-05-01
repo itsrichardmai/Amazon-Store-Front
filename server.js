@@ -60,7 +60,7 @@ function startApplication() {
         if (inquirerResponse.confirm && userAnswer.itemID >= 1 && userAnswer.quantity >= 1) {
             // console.log(typeof userAnswer.quantity)
             // return userAnswer;
-            compareValue(userAnswer);
+            checkStore(userAnswer);
         }
         
         else 
@@ -80,7 +80,7 @@ function startApplication() {
     }
 
 
-    function compareValue() {
+    function checkStore() {
         
             var query = "SELECT item_id, product_name, department_name, price, stock_quantity FROM products WHERE item_id=";
             connection.query( "" + query + userAnswer.itemID, function (err, result,) {
@@ -101,7 +101,8 @@ function startApplication() {
                             console.log("You wanted to purchase " + userAnswer.quantity + " of this item");
 
                 if (userAnswer.quantity >= result[0].stock_quantity) {
-                    console.log("Sorry, we do not have enough of this item in stock to sell you! Please try again later!")
+                    console.log("Sorry, we do not have enough of this item in stock to sell you! Please try again later!");
+                    return;
                 }
 
                             
@@ -112,10 +113,11 @@ function startApplication() {
                 var remainingQuantity = result[0].stock_quantity;
                 remainingQuantity -= userAnswer.quantity;
                 // console.log(remainingQuantity);
-                query = "UPDATE products SET stock_quantity =" + remainingQuantity + "WHERE item_id=" + userAnswer.itemID;
-                connection.query("" + query, function(err, result){
+                var sql = "UPDATE products SET stock_quantity =" + remainingQuantity + " WHERE item_id=" + userAnswer.itemID;
+                connection.query("" + sql, function(err, result){
                     if (err) throw err;
-                    console.log("There are only " + result + "of this item left")
+                    // console.log(result)
+                    console.log("There are only " + remainingQuantity + " of this item left.");
                     connection.end();
                 });
         
