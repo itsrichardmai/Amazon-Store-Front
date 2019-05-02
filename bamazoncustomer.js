@@ -8,7 +8,7 @@ var connection = mysql.createConnection({
 
     user: "ayoitsrich",
 
-    password: "X6142298x",
+    password: "CENSORED",
 
     database: "amazon_db"
 })
